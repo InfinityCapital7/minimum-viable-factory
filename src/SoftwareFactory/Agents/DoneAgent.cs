@@ -23,12 +23,21 @@ public sealed class DoneAgent : IFactoryAgent
 
         Directory.CreateDirectory(work.OutputDirectory);
         var statusPath = Path.Combine(work.OutputDirectory, "factory-status.json");
+        var relative = Path.GetRelativePath(work.RepoRoot, statusPath).Replace('\\', '/');
+        var passed = work.ReviewVerdict == "PASS";
+
+        work.History.Add(new StageRecord
+        {
+            Name = Name,
+            Ok = passed,
+            Notes = relative
+        });
 
         var status = new
         {
             ticketId = work.Ticket.Id,
             title = work.Ticket.Title,
-            status = work.ReviewVerdict == "PASS" ? "Done" : "Failed",
+            status = passed ? "Done" : "Failed",
             review = work.ReviewVerdict,
             reviewNotes = work.ReviewNotes,
             brain = work.Brain,
@@ -47,14 +56,6 @@ public sealed class DoneAgent : IFactoryAgent
         var json = JsonSerializer.Serialize(status, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(statusPath, json + Environment.NewLine, cancellationToken);
 
-        work.History.Add(new StageRecord
-        {
-            Name = Name,
-            Ok = work.ReviewVerdict == "PASS",
-            Notes = statusPath
-        });
-
-        var relative = Path.GetRelativePath(work.RepoRoot, statusPath).Replace('\\', '/');
         StageLog.Info($"Wrote {relative}");
         StageLog.Info($"Status: {status.status}  Review: {work.ReviewVerdict}");
     }
