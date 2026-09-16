@@ -1,0 +1,10 @@
+{
+  "id": "SF-101",
+  "title": "Hello World console greeting",
+  "description": "Create a .NET console app that greets the world and includes this ticket id in the output.",
+  "acceptanceCriteria": [
+    "A real HelloWorld project is written under output/",
+    "The project builds with `dotnet build`",
+    "Running the app prints a greeting that includes SF-101"
+  ]
+}
